@@ -226,70 +226,77 @@ JOIN
     MaxVentasPorPais m ON v.Pais = m.Pais AND v.Unidades = m.MaxUnidades;
 
 --Consulta 8
-/*Mostrar el mes con más y menos ventas. Se debe de mostrar el número de mes y
-monto. (Una sola consulta).*/
+/*Mostrar las ventas por mes de inglaterra. Debe mostrar el número de mes y monto. (Una sola consulta).*/
+SELECT
+    MONTH(fecha_orden) AS Numero_Mes,
+    SUM(precio * cantidad) AS Monto
+FROM
+    ORDEN_VENTA OV
+JOIN
+    PRODUCTO P ON OV.id_producto = P.id_producto
+JOIN
+    VENDEDOR V ON OV.id_vendedor = V.id_vendedor
+WHERE
+    V.id_pais = (SELECT id_pais FROM PAIS WHERE nombre = 'Inglaterra')
+GROUP BY
+    MONTH(fecha_orden)
+ORDER BY
+    Numero_Mes;
 
-WITH VentasPorMes AS (
-    SELECT 
-        MONTH(o.fecha_orden) AS Mes,
-        SUM(p.precio * o.cantidad) AS Monto
-    FROM 
-        ORDEN_VENTA o
-    JOIN 
-        PRODUCTO p ON o.id_producto = p.id_producto
-    WHERE 
-        o.fecha_orden IS NOT NULL
-    GROUP BY 
-        MONTH(o.fecha_orden)
-)
 
 
 --Consulta 9
 /*Mostrar el mes con más y menos ventas. Se debe de mostrar el número de mes y
 monto. (Una sola consulta).*/
+-- Mes con más ventas
 WITH VentasPorMes AS (
     SELECT 
-        MONTH(o.fecha_orden) AS Mes,
-        SUM(p.precio * o.cantidad) AS Monto
-    FROM 
-        ORDEN_VENTA o
-    JOIN 
-        PRODUCTO p ON o.id_producto = p.id_producto
-    WHERE 
-        o.fecha_orden IS NOT NULL
-    GROUP BY 
-        MONTH(o.fecha_orden)
+        MONTH(fecha_orden) AS Numero_Mes,
+        SUM(precio * cantidad) AS Monto_Total
+    FROM ORDEN_VENTA
+    JOIN PRODUCTO ON ORDEN_VENTA.id_producto = PRODUCTO.id_producto
+    GROUP BY MONTH(fecha_orden)
 )
 SELECT 
-    Mes,
-    Monto,
-    CASE 
-        WHEN Monto = (SELECT MAX(Monto) FROM VentasPorMes) THEN 'Mayor venta'
-        WHEN Monto = (SELECT MIN(Monto) FROM VentasPorMes) THEN 'Menor venta'
-    END AS TipoVenta
-FROM 
-    VentasPorMes
-WHERE 
-    Monto IN ((SELECT MAX(Monto) FROM VentasPorMes), (SELECT MIN(Monto) FROM VentasPorMes));
+    'Mes con más ventas' AS Tipo_Mes,
+    Numero_Mes,
+    Monto_Total
+FROM VentasPorMes
+WHERE Monto_Total = (SELECT MAX(Monto_Total) FROM VentasPorMes)
+
+UNION ALL
+
+SELECT 
+    'Mes con menos ventas' AS Tipo_Mes,
+    Numero_Mes,
+    Monto_Total
+FROM VentasPorMes
+WHERE Monto_Total = (SELECT MIN(Monto_Total) FROM VentasPorMes);
+
 
 --Consulta 10
 /* Mostrar las ventas de cada producto de la categoría deportes. Se debe de mostrar el
 id del producto, nombre y monto*/
 
 SELECT 
-    p.id_producto AS ID_Producto,
-    p.nombre AS Nombre,
-    SUM(p.precio * o.cantidad) AS Monto
-FROM 
-    PRODUCTO p
-JOIN 
-    ORDEN_VENTA o ON p.id_producto = o.id_producto
-JOIN 
-    CATEGORIA c ON p.id_categoria = c.id_categoria
-WHERE 
-    c.nombre = 'deportes'
-GROUP BY 
-    p.id_producto, p.nombre;
+    COUNT(*) AS Numero_de_Filas
+FROM (
+    SELECT 
+        p.id_producto AS ID_Producto,
+        p.nombre AS Nombre,
+        SUM(p.precio * o.cantidad) AS Monto
+    FROM 
+        PRODUCTO p
+    JOIN 
+        ORDEN_VENTA o ON p.id_producto = o.id_producto
+    JOIN 
+        CATEGORIA c ON p.id_categoria = c.id_categoria
+    WHERE 
+        c.nombre = 'deportes'
+    GROUP BY 
+        p.id_producto, p.nombre
+) AS Subconsulta;
+
 
 --Eliminar información 
 DELETE FROM ORDEN_VENTA;
