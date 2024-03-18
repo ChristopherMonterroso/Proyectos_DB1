@@ -3,7 +3,7 @@ CREATE DATABASE DB_Proyecto1;
 USE DB_Proyecto1;
 
 CREATE TABLE CATEGORIA (
-    id_categoria INTEGER,
+    id_categoria INTEGER PRIMARY KEY,
     nombre VARCHAR(50)
 );
 CREATE TABLE PAIS (
