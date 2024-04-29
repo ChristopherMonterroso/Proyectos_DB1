@@ -128,21 +128,21 @@ EXEC asignarTransaccion
 	@Fecha = '10/04/2024',
 	@Otros_Detalles = '',
 	@Id_Tipo_Transaccion = 1,
-	@Id_CompraDebitoDeposito  = 1113,
+	@Id_Compra = 1113,
 	@No_cuenta = 3030206080;
 
 EXEC asignarTransaccion
 	@Fecha = '10/04/2024',
 	@Otros_Detalles = '',
 	@Id_Tipo_Transaccion = 2,
-	@Id_CompraDebitoDeposito  = 1114,
+	@Id_Deposito = 1114,
 	@No_cuenta = 3030206080;
 
 EXEC asignarTransaccion
 	@Fecha = '10/04/2024',
 	@Otros_Detalles = 'este si tiene detalle',
 	@Id_Tipo_Transaccion = 3,
-	@Id_CompraDebitoDeposito  = 1116,
+	@Id_debito = 1116,
 	@No_cuenta = 3030206080;
 
 
@@ -162,9 +162,9 @@ realizarDebito(1117, '10/04/2024', 0, 'retiro de dinero con error', 1001); --aqu
 
 -- registrar transaccion
 --              id,      fecha,  otrosdetalles, id_tipo_transaccion, idcompra/deposito/debito, nocuenta
-asignarTransaccion(1118, '10/04/2024','', 1, 1113, 3030206080); -- aqui hay error debido a que no se tiene el saldo suficiente para realizar la compra
-asignarTransaccion(1115, '10/04/2024','',2, 1114, 3030206080); -- se realia deposito *aqui se puede depositar a una cuenta que no es del cliente
-asignarTransaccion(1120, '10/04/2024','este si tiene detalle',3, 1116, 3030206080); -- se realiza un debito
+asignarTransaccion(1118, '10/04/2024','', 1, 1113,0,0, 3030206080); -- aqui hay error debido a que no se tiene el saldo suficiente para realizar la compra
+asignarTransaccion(1115, '10/04/2024','',2, 0,1114,0, 3030206080); -- se realia deposito *aqui se puede depositar a una cuenta que no es del cliente
+asignarTransaccion(1120, '10/04/2024','este si tiene detalle',3, 0,0,1116, 3030206080); -- se realiza un debito
 
 
 
