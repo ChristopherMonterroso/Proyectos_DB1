@@ -14,10 +14,9 @@ BEGIN
     -- Verificar si el número de cuenta existe
     IF NOT EXISTS (SELECT 1 FROM Cuenta WHERE Id_cuenta = @Numero_de_cuenta)
     BEGIN
-        THROW 51000, 'El número de cuenta no existe.', 1;
+        RAISERROR('El tipo de cuenta no existe.', 16, 1);
     END
 
-    -- Extraer información relevante
     SELECT 
         c.Nombre AS Nombre_Cliente,
         tc.Nombre AS Tipo_Cliente,
@@ -36,17 +35,15 @@ BEGIN
         ct.Id_cuenta = @Numero_de_cuenta;
 END;
 
-EXEC saldoCliente 3030206080;
-
 --2
 CREATE PROCEDURE consultarCliente
     @Id_cliente INT
 AS
 BEGIN
-    -- Verificar si el cliente existe
+    
     IF NOT EXISTS (SELECT 1 FROM Cliente WHERE Id_cliente = @Id_cliente)
     BEGIN
-        THROW 51000, 'El cliente no existe.', 1;
+        RAISERROR('El tipo de cuenta no existe.', 16, 1);
     END
 
     -- Obtener la información del cliente
@@ -70,14 +67,12 @@ BEGIN
         c.Id_cliente, c.Nombre, c.Apellidos, c.Usuario, c.Teléfonos, c.Correo;
 END;
 
-EXEC consultarCliente 1001;
-
 --3
 CREATE PROCEDURE consultarMovsCliente
     @idCliente INT
 AS
 BEGIN
-    -- Comprobar si el cliente existe
+
     IF NOT EXISTS (
         SELECT 1 
         FROM Cliente 
@@ -115,21 +110,18 @@ BEGIN
     WHERE 
         cta.IdCliente = @idCliente
     ORDER BY 
-        t.Fecha;  -- Ordenar por fecha para ver el flujo cronológico
+        t.Fecha;  -- Ordenar por fecha 
 END
 
-EXEC consultarMovsCliente 1001;
-
 --4
-
 CREATE PROCEDURE consultarTipoCuentas
     @Id_tipo_cuenta INT
 AS
 BEGIN
-    -- Verificar si el tipo de cuenta existe
+
     IF NOT EXISTS (SELECT 1 FROM tipoCuenta WHERE Codigo = @Id_tipo_cuenta)
     BEGIN
-        THROW 51000, 'El tipo de cuenta no existe.', 1;
+        RAISERROR('El tipo de cuenta no existe.', 16, 1);
     END
 
     -- Obtener el código del tipo de cuenta, el nombre del tipo de cuenta y la cantidad de clientes
@@ -148,8 +140,6 @@ BEGIN
     GROUP BY 
         tc.Codigo, tc.Nombre;
 END;
-
-EXEC consultarTipoCuentas 1;
 
 --5 
 CREATE PROCEDURE consultarMovsGenFech
@@ -210,17 +200,13 @@ BEGIN
     WHERE 
         t.Fecha BETWEEN @FechaInicioDate AND @FechaFinDate
     ORDER BY 
-        t.Fecha;  -- Ordenar por fecha para obtener un flujo cronológico
-END
-
-
-EXEC consultarMovsGenFech '01-04-2024', '30-04-2024';
+        t.Fecha;  -- Ordenar por fecha 
 
 --6
 CREATE PROCEDURE consultarMovsFechClien
     @idCliente INT,
-    @FechaInicio VARCHAR(10),  -- Cambiar a VARCHAR para controlar el formato
-    @FechaFin VARCHAR(10)  -- Cambiar a VARCHAR para controlar el formato
+    @FechaInicio VARCHAR(10),  
+    @FechaFin VARCHAR(10)  
 AS
 BEGIN
     -- Comprobar si el cliente existe
@@ -251,15 +237,14 @@ BEGIN
     -- Intentar convertir las fechas
     BEGIN TRY
         SET @FechaInicioDate = CONVERT(DATE, @FechaInicio, @DateFormat)  -- Usar estilo 105 para DD-MM-YY
-        SET @FechaFinDate = CONVERT(DATE, @FechaFin, @DateFormat)  -- Usar estilo 105
+        SET @FechaFinDate = CONVERT(DATE, @FechaFin, @DateFormat)  
     END TRY
     BEGIN CATCH
-        -- Capturar error de conversión y lanzar mensaje apropiado
+        
         RAISERROR('Formato de fecha no válido. Use DD-MM-YY.', 16, 1);
         RETURN;
     END CATCH
 
-    -- Validar que la fecha de inicio no sea mayor que la fecha de fin
     IF @FechaInicioDate > @FechaFinDate
     BEGIN
         RAISERROR('La fecha de inicio no puede ser mayor que la fecha final.', 16, 1);
@@ -298,11 +283,8 @@ BEGIN
         cl.Id_cliente = @idCliente
         AND t.Fecha BETWEEN @FechaInicioDate AND @FechaFinDate
     ORDER BY 
-        t.Fecha;  -- Ordenar por fecha para obtener un flujo cronológico
+        t.Fecha;  
 END
-
-
-EXEC consultarMovsFechClien 1001, '01-04-2024', '30-04-2024';
 
 --7
 CREATE PROCEDURE consultarProductoServicio
@@ -323,5 +305,4 @@ BEGIN
         Tipo, Codigo;
 END;
 
-EXEC consultarProductoServicio
 

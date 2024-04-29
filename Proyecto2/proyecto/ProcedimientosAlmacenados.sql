@@ -27,15 +27,11 @@ BEGIN
         RAISERROR('Este tipo de cliente ya existe', 16, 1);
         RETURN;
     END
-    -- Inserción de datos en la tabla (sin especificar ID)
     INSERT INTO TipoCliente (Nombre, Descripción)
     VALUES (@Nombre, @Descripción);
 
-    -- Confirmación de inserción
     PRINT 'Tipo de cliente insertado correctamente';
 END;
-
-
 
 -- Procedimiento para registrar un nuevo cliente
 CREATE PROCEDURE registrarCliente
@@ -58,14 +54,12 @@ BEGIN
         RAISERROR('El ID del cliente debe ser un número entero.', 16, 1);
         RETURN;
     END CATCH
-    -- Validación para que el ID no esté duplicado
-    
+
     IF EXISTS (SELECT 1 FROM Cliente WHERE Id_cliente = @Id_cliente)
     BEGIN
         RAISERROR('El ID del cliente ya existe.', 16, 1);
         RETURN;
     END
-    
     -- Validación de solo letras y espacios para Nombre y Apellidos
     IF @Nombre LIKE '%[^a-zA-Z ]%'
     BEGIN
@@ -111,7 +105,6 @@ BEGIN
     INSERT INTO Cliente (Id_cliente, Nombre, Apellidos, Teléfonos, Correo, Usuario, Contraseña, TipoCliente, Salt)
     VALUES (@Id_cliente, @Nombre, @Apellidos, @Teléfonos, @Correo, @Usuario, @ContraseñaHasheada, @TipoCliente, @Salt);
 
-    -- Confirmación de inserción
     PRINT 'Cliente registrado correctamente';
 END;
 
@@ -137,19 +130,17 @@ BEGIN
     END
     ELSE
     BEGIN
-        -- Si el código no se especifica, se permite el autoincremento
         INSERT INTO tipoCuenta (Nombre, Descripción)
         VALUES (@Nombre, @Descripción);
     END
 
-    -- Confirmación de inserción
     PRINT 'Tipo de cuenta registrado correctamente';
 END;
 
 
 --Procedimiento para registrar una nueva cuenta
 CREATE PROCEDURE registrarCuenta
-    @Id_cuenta BIGINT,  -- Código opcional para permitir autoincremento
+    @Id_cuenta BIGINT, 
     @Monto_apertura DECIMAL(12,2),
     @Saldo_cuenta DECIMAL(12,2),
     @Descripción VARCHAR(50),
@@ -179,31 +170,25 @@ BEGIN
         RAISERROR('El saldo de la cuenta debe ser igual al monto de apertura.', 16, 1);
         RETURN;
     END
-    -- Validación para asegurar que el Tipo_Cuenta exista
     IF NOT EXISTS (SELECT 1 FROM tipoCuenta WHERE Codigo = @Tipo_Cuenta)
     BEGIN
         RAISERROR('El tipo de cuenta especificado no existe.', 16, 1);
         RETURN;
     END
-    
-    -- Validación para asegurar que el IdCliente exista
     IF NOT EXISTS (SELECT 1 FROM Cliente WHERE Id_cliente = @IdCliente)
     BEGIN
         RAISERROR('El cliente especificado no existe.', 16, 1);
         RETURN;
     END
-    
     IF EXISTS (SELECT 1 FROM Cuenta WHERE Id_cuenta = @Id_cuenta)
     BEGIN
         RAISERROR('Esta cuenta ya existe.', 16, 1);
         RETURN;
     END
 
-    -- Inserción de datos en la tabla Cuenta
     INSERT INTO Cuenta (Id_cuenta, Monto_apertura, Saldo_cuenta, Descripción, Otros_detalles, Tipo_Cuenta, IdCliente, Fecha_de_apertura)
     VALUES (@Id_cuenta, @Monto_apertura, @Saldo_cuenta, @Descripción, @Otros_detalles, @Tipo_Cuenta, @IdCliente, ISNULL(@Fecha_de_apertura, GETDATE()));
 
-    -- Confirmación de inserción
     PRINT 'Cuenta registrada correctamente';
 END;
 
@@ -219,22 +204,16 @@ CREATE PROCEDURE crearProductoServicio
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    -- Validación para asegurarse de que el código no esté duplicado
     IF EXISTS (SELECT 1 FROM ProductoServicio WHERE Codigo = @Codigo)
     BEGIN
         RAISERROR('El código del producto o servicio ya existe.', 16, 1);
         RETURN;
     END
-
-    -- Validación para asegurarse de que el costo es obligatorio para servicios
     IF @Tipo = 1 AND @Costo IS NULL
     BEGIN
         RAISERROR('El costo es obligatorio para servicios.', 16, 1);
         RETURN;
     END
-
-    -- Validación para asegurar que productos no tengan costo o tengan costo igual a cero
     IF @Tipo = 2 AND @Costo > 0
     BEGIN
         RAISERROR('El costo no debe ser especificado o debe ser cero para productos.', 16, 1);
@@ -245,11 +224,8 @@ BEGIN
         RAISERROR('El costo no debe ser negativo.', 16, 1);
         RETURN;
     END
-    -- Inserción de datos en la tabla ProductoServicio
     INSERT INTO ProductoServicio (Codigo, Tipo, Costo, Descripción)
     VALUES (@Codigo, @Tipo, @Costo, @Descripción);
-
-    -- Confirmación de inserción
     PRINT 'Producto o servicio registrado correctamente';
 END;
 
@@ -261,26 +237,21 @@ CREATE PROCEDURE registrarTipoTransaccion
 AS 
 BEGIN
     SET NOCOUNT ON;
-
-    -- Validación para asegurarse de que el nombre no esté vacío
     IF LEN(@Nombre) = 0 OR LEN(@Descripción) =0
     BEGIN
         RAISERROR('El nombre y/o descripción de la transacción es obligatorio.', 16, 1);
         RETURN;
     END
     
-    -- Validación para evitar duplicados de nombre
     IF EXISTS (SELECT 1 FROM TipoTransaccion WHERE Nombre = @Nombre)
     BEGIN
         RAISERROR('El nombre de la transacción ya existe.', 16, 1);
         RETURN;
     END
 
-    -- Inserción de datos en la tabla TipoTransaccion, permitiendo autoincremento del ID
     INSERT INTO TipoTransaccion (Nombre, Descripción)
     VALUES (@Nombre, @Descripción);
 
-    -- Confirmación de inserción
     PRINT 'Tipo de transacción registrado correctamente';
 END;
 
@@ -295,7 +266,6 @@ CREATE PROCEDURE realizarCompra
 AS
 BEGIN
     BEGIN TRY
-        -- Iniciar la transacción
         DECLARE @FechaDate DATE;
         SET @FechaDate = CONVERT(DATE, @Fecha, 103);
         BEGIN TRANSACTION
@@ -306,11 +276,10 @@ BEGIN
             ROLLBACK;  -- Hacer rollback si el ID de la compra ya existe
             RETURN;
         END
-        -- Verificar que el cliente existe
         IF NOT EXISTS (SELECT 1 FROM Cliente WHERE Id_cliente = @Id_cliente)
         BEGIN
             RAISERROR('El cliente especificado no existe.', 16, 1);
-            ROLLBACK;  -- Hacer rollback si el cliente no existe
+            ROLLBACK;  
             RETURN;
         END
         
@@ -346,7 +315,6 @@ BEGIN
             SET @Importe_compra = (SELECT Costo FROM ProductoServicio WHERE Codigo = @Codigo_producto_servicio)
         END
         
-        -- Insertar en la tabla Compra
         INSERT INTO Compra (
             Id_compra,
             Fecha,
@@ -363,8 +331,6 @@ BEGIN
             @Codigo_producto_servicio,
             @Id_cliente
         )
-        
-        -- Confirmar la transacción si todo está correcto
         COMMIT
         
         PRINT 'Compra registrada correctamente'
@@ -399,7 +365,6 @@ CREATE PROCEDURE realizarDeposito
     @Id_cliente INT
 AS
 BEGIN
-    -- Verificar que el cliente existe
     DECLARE @FechaDate DATE;
     SET @FechaDate = CONVERT(DATE, @Fecha, 103);
 
@@ -418,11 +383,6 @@ BEGIN
         RAISERROR('El cliente especificado no existe.', 16, 1)
         RETURN
     END
-
-    -- Verificar que el monto es positivo
-    
-
-    -- Insertar en la tabla Deposito
     INSERT INTO Deposito (
         Id_deposito,
         Fecha,
@@ -459,7 +419,6 @@ BEGIN
         RAISERROR('El débito ya existe.', 16, 1)
         RETURN
     END
-    -- Verificar existencia del cliente
     IF NOT EXISTS (SELECT 1 FROM Cliente WHERE Id_cliente = @Id_cliente)
     BEGIN
         RAISERROR('El cliente especificado no existe.', 16, 1)
@@ -473,7 +432,6 @@ BEGIN
         RETURN
     END
 
-    -- Insertar en la tabla Debito
     INSERT INTO Debito (
         Id_debito,
         Fecha,
@@ -521,7 +479,6 @@ BEGIN
         RETURN;
     END
     
-    -- Validar que la cuenta exista
     IF @Id_compra IS NOT NULL 
     BEGIN
         IF NOT EXISTS (SELECT 1 FROM Compra WHERE Id_compra = @Id_compra)
